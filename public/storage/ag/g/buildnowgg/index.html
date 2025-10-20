@@ -1,19 +1,22 @@
-
+<!-- Credits to cg-rip and Imbetterlilboy -->
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <base href="https://cdn.jsdelivr.net/gh/genizy/cg-rip@main/buildnow-gg/">
+    <base href="./">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>BuildNow GG - Local</title>
   </head>
   <body style="margin:0;padding:0" class="noselect">
-    <div id="loading-text" style="color: black; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;">LOADING...</div>
-    <canvas id="unity-canvas"
-      style="position:fixed;top:0;left:0;width:100%;height:100%;outline:none"></canvas>
+    <div id="loading-text" style="color:black;font-size:48px;font-family:cursive;text-align:center;margin-top:20px;">LOADING...</div>
+    <canvas id="unity-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;outline:none"></canvas>
 
     <script>
-    const SPLIT_MAP = {"7db022abd161455e3cc5f207e75d294b.wasm": null, "ab8dd356a41a2943639294657a0990f8.data": null};
+    const SPLIT_MAP = {
+      "7db022abd161455e3cc5f207e75d294b.wasm": null,
+      "ab8dd356a41a2943639294657a0990f8.data": null
+    };
     </script>
 
     <script>
@@ -57,28 +60,21 @@
         done++;
         const percent = Math.floor((done / total) * 100);
         loadingText.innerText = `LOADING... ${percent}%`;
-        console.log("Premerged:", file, "→", merged);
       }
 
       loadingText.style.display = "none";
-
       return map;
     }
 
     (async () => {
       const mergedMap = await preMergeAll();
       window.SPLIT_MAP = mergedMap;
+
       const origFetch = window.fetch;
       window.fetch = async function(resource, options) {
         if (typeof resource === "string") {
           const key = resource.split("/").pop();
-          if (mergedMap[key]) {
-            console.log("Redirect fetch:", key);
-            return origFetch(mergedMap[key], options);
-          }
-          if (resource.includes("StreamingAssets")) {
-            return origFetch((document.querySelector('base').href !== null ? document.querySelector('base').href+"/" : "") + "StreamingAssets/"+resource.split("/StreamingAssets/")[1])
-          }
+          if (mergedMap[key]) return origFetch(mergedMap[key], options);
         }
         return origFetch(resource, options);
       };
@@ -90,7 +86,6 @@
         xhr.open = function(method, url, ...rest) {
           const key = url.split("/").pop();
           if (mergedMap[key]) {
-            console.log("Redirect XHR:", key);
             origOpen.call(xhr, method, mergedMap[key], ...rest);
           } else {
             origOpen.call(xhr, method, url, ...rest);
